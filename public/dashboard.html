@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Cash Flow Management Dashboard — View bills, approvals, and balances.">
+  <title>Cash Flow Management — Dashboard</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Mobile Header -->
+  <div class="mobile-header">
+    <button class="mobile-hamburger" id="mobileMenuBtn">☰</button>
+    <span class="mobile-header-title">CashFlow</span>
+  </div>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <div class="sidebar-brand-icon">₹</div>
+          <div class="sidebar-brand-text">CashFlow</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" id="sidebarNav">
+        <!-- Nav items are rendered dynamically based on role -->
+      </nav>
+
+      <div class="sidebar-user" id="sidebarUser">
+        <div class="sidebar-user-avatar" id="userAvatar">--</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="userName">Loading...</div>
+          <div class="sidebar-user-role" id="userRole">—</div>
+        </div>
+        <button class="sidebar-logout" id="logoutBtn" title="Sign Out">⏻</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+      <!-- Sections are rendered dynamically -->
+      <div id="pageContent">
+        <div class="empty-state">
+          <div class="empty-state-icon">⏳</div>
+          <div class="empty-state-text">Loading dashboard...</div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Image Lightbox -->
+  <div class="lightbox" id="lightbox">
+    <img id="lightboxImage" src="" alt="Bill Photo">
+  </div>
+
+  <!-- Reject Modal -->
+  <div class="modal-overlay" id="rejectModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Reject Bill</h3>
+        <button class="modal-close" id="rejectModalClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="margin-bottom: var(--space-4); color: var(--color-gray-600); font-size: var(--font-size-sm);">
+          Select a reason for rejecting this bill:
+        </p>
+        <div class="rejection-reasons" id="rejectionReasons">
+          <label class="rejection-reason-option">
+            <input type="radio" name="rejectReason" value="Wrong Amount">
+            Wrong Amount
+          </label>
+          <label class="rejection-reason-option">
+            <input type="radio" name="rejectReason" value="Blurry Bill">
+            Blurry Bill
+          </label>
+          <label class="rejection-reason-option">
+            <input type="radio" name="rejectReason" value="Duplicate Bill">
+            Duplicate Bill
+          </label>
+          <label class="rejection-reason-option">
+            <input type="radio" name="rejectReason" value="Invalid Expense">
+            Invalid Expense
+          </label>
+          <label class="rejection-reason-option">
+            <input type="radio" name="rejectReason" value="Other">
+            Other
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline btn-sm" id="rejectCancelBtn">Cancel</button>
+        <button class="btn btn-danger btn-sm" id="rejectConfirmBtn">Reject Bill</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/bills.js"></script>
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>
