@@ -63,6 +63,10 @@ const API = {
       body: JSON.stringify(body),
     });
   },
+
+  delete(url) {
+    return this.request(url, { method: 'DELETE' });
+  },
 };
 
 // ─── Toast Notifications ─────────────────────────────────────────────────────
