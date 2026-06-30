@@ -47,21 +47,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Click on demo credentials to autofill
-  document.querySelectorAll('.credential-row').forEach(row => {
-    row.addEventListener('click', () => {
-      usernameInput.value = row.dataset.user;
-      passwordInput.value = row.dataset.pass;
-      hideError();
-
-      // Visual feedback
-      row.style.background = 'var(--color-primary-light)';
-      setTimeout(() => {
-        row.style.background = '';
-      }, 300);
-    });
-  });
-
   function showError(message) {
     errorText.textContent = message;
     errorDiv.classList.add('visible');

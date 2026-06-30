@@ -56,6 +56,7 @@ const Dashboard = {
         { section: 'allbills', icon: '📑', label: 'All Bills' },
         { section: 'contractors', icon: '🏗', label: 'Contractors' },
         { section: 'laborers', icon: '👷', label: 'All Laborers' },
+        { section: 'userscreds', icon: '👤', label: 'Users & Credentials' },
         { section: 'transactions', icon: '💰', label: 'Transactions' },
       ];
     }
@@ -175,6 +176,9 @@ const Dashboard = {
         break;
       case 'contractors':
         await Dashboard.renderContractors(container);
+        break;
+      case 'userscreds':
+        Dashboard.renderUsersCredentials(container);
         break;
       case 'transactions':
         await Dashboard.renderTransactions(container);
@@ -506,6 +510,353 @@ const Dashboard = {
       </div>
       ${rows}
     `;
+  },
+
+  // ─── Users & Credentials (Admin) ──────────────────────────────────────
+
+  async renderUsersCredentials(container) {
+    // ─── Creation form (same as before) ────────────────────────────────
+    container.innerHTML = `
+      <div class="page-header">
+        <h1 class="page-title">Users & Credentials</h1>
+        <p class="page-subtitle">Create accounts, reset passwords, or remove users</p>
+      </div>
+      <div class="card" style="max-width: 520px;">
+        <div class="card-header">
+          <h3 class="card-title">Create New User</h3>
+        </div>
+        <div class="card-body">
+          <form id="createUserForm" autocomplete="off">
+            <div class="form-group">
+              <label class="form-label" for="cu_role">Role</label>
+              <select class="form-input" id="cu_role" required>
+                <option value="">— Select Role —</option>
+                <option value="contractor">Contractor</option>
+                <option value="laborer">Laborer</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="cu_full_name">Full Name</label>
+              <input type="text" class="form-input" id="cu_full_name" required placeholder="e.g. Vikram Singh">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="cu_username">Username</label>
+              <input type="text" class="form-input" id="cu_username" required placeholder="e.g. vikram">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="cu_password">Password</label>
+              <input type="text" class="form-input" id="cu_password" required placeholder="Temporary password">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="cu_phone">Phone (optional)</label>
+              <input type="text" class="form-input" id="cu_phone" placeholder="e.g. 9876543210">
+            </div>
+            <div class="form-group" id="cu_company_group" style="display:none;">
+              <label class="form-label" for="cu_company">Company Name</label>
+              <input type="text" class="form-input" id="cu_company" placeholder="e.g. Singh Construction">
+            </div>
+            <div class="form-group" id="cu_contractor_group" style="display:none;">
+              <label class="form-label" for="cu_contractor">Contractor</label>
+              <select class="form-input" id="cu_contractor">
+                <option value="">— Select Contractor —</option>
+              </select>
+            </div>
+            <div class="form-error" id="cu_error" style="display:none;">
+              <span>⚠</span>
+              <span id="cu_error_text"></span>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block" id="cu_btn">
+              Create User
+            </button>
+            <div class="form-success" id="cu_success" style="display:none;">
+              <span>✓</span>
+              <span id="cu_success_text"></span>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div id="usersCredentialsTable" style="margin-top: var(--space-4);">
+        <div class="empty-state" style="padding: var(--space-8);">
+          <div class="spinner" style="border-color: var(--color-gray-300); border-top-color: var(--color-primary); width:32px; height:32px; margin: 0 auto var(--space-4);"></div>
+          <div class="empty-state-text" style="font-size: var(--font-size-sm);">Loading users...</div>
+        </div>
+      </div>
+    `;
+
+    // ─── Create user form logic ────────────────────────────────────────
+    const roleSelect = document.getElementById('cu_role');
+    const companyGroup = document.getElementById('cu_company_group');
+    const contractorGroup = document.getElementById('cu_contractor_group');
+    const companyInput = document.getElementById('cu_company');
+    const contractorInput = document.getElementById('cu_contractor');
+
+    (async () => {
+      try {
+        const data = await API.get('/api/users/contractors');
+        const contractors = data.contractors || [];
+        contractors.forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c.user_id;
+          opt.textContent = `${c.full_name} (${c.user_id})${c.company_name ? ' — ' + c.company_name : ''}`;
+          contractorInput.appendChild(opt);
+        });
+      } catch {}
+    })();
+
+    roleSelect.addEventListener('change', () => {
+      const val = roleSelect.value;
+      companyGroup.style.display = val === 'contractor' ? '' : 'none';
+      contractorGroup.style.display = val === 'laborer' ? '' : 'none';
+      companyInput.required = val === 'contractor';
+      contractorInput.required = val === 'laborer';
+    });
+
+    const form = document.getElementById('createUserForm');
+    const errorDiv = document.getElementById('cu_error');
+    const errorText = document.getElementById('cu_error_text');
+    const successDiv = document.getElementById('cu_success');
+    const successText = document.getElementById('cu_success_text');
+    const btn = document.getElementById('cu_btn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorDiv.style.display = 'none';
+      successDiv.style.display = 'none';
+
+      const payload = {
+        username: document.getElementById('cu_username').value.trim(),
+        password: document.getElementById('cu_password').value.trim(),
+        full_name: document.getElementById('cu_full_name').value.trim(),
+        phone: document.getElementById('cu_phone').value.trim(),
+        role: roleSelect.value,
+      };
+
+      if (!payload.username || !payload.password || !payload.full_name || !payload.role) {
+        errorText.textContent = 'Please fill in all required fields';
+        errorDiv.style.display = '';
+        return;
+      }
+
+      if (payload.role === 'contractor') {
+        payload.company_name = companyInput.value.trim();
+      } else if (payload.role === 'laborer') {
+        payload.contractor_id = contractorInput.value.trim();
+        if (!payload.contractor_id) {
+          errorText.textContent = 'Contractor is required for laborers';
+          errorDiv.style.display = '';
+          return;
+        }
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Creating...';
+
+      try {
+        const data = await API.post('/api/users/create', payload);
+        if (data && data.success) {
+          const u = data.user;
+          successText.textContent = `Created ${u.role}: ${u.full_name} (${u.username}, ${u.user_id})`;
+          successDiv.style.display = '';
+          form.reset();
+          roleSelect.value = '';
+          companyGroup.style.display = 'none';
+          contractorGroup.style.display = 'none';
+          document.getElementById('cu_username').focus();
+          // Refresh the users table
+          Dashboard.loadUsersTable();
+        }
+      } catch (err) {
+        errorText.textContent = err.message;
+        errorDiv.style.display = '';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Create User';
+      }
+    });
+
+    // ─── Load users table ──────────────────────────────────────────────
+    await Dashboard.loadUsersTable();
+  },
+
+  async loadUsersTable() {
+    const tableContainer = document.getElementById('usersCredentialsTable');
+    if (!tableContainer) return;
+
+    let users;
+    try {
+      const data = await API.get('/api/users/all');
+      users = data.users || [];
+    } catch {
+      tableContainer.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">⚠️</div>
+          <div class="empty-state-text">Failed to load users</div>
+        </div>
+      `;
+      return;
+    }
+
+    if (users.length === 0) {
+      tableContainer.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">👤</div>
+          <div class="empty-state-text">No users found</div>
+        </div>
+      `;
+      return;
+    }
+
+    const roleLabels = { contractor: 'Contractor', laborer: 'Laborer' };
+
+    tableContainer.innerHTML = `
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">All Users (${users.length})</h3>
+        </div>
+        <div class="card-body-flush" style="overflow-x:auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Phone</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${users.map(u => `
+                <tr>
+                  <td><strong>${escapeHtml(u.user_id)}</strong></td>
+                  <td>${escapeHtml(u.full_name)}</td>
+                  <td><code>${escapeHtml(u.username)}</code></td>
+                  <td><span class="role-badge role-${u.role}">${roleLabels[u.role] || u.role}</span></td>
+                  <td>${escapeHtml(u.phone || '—')}</td>
+                  <td>
+                    <div class="action-btn-group">
+                      <button class="btn btn-outline btn-xs reset-pwd-btn" data-userid="${escapeHtml(u.user_id)}" data-name="${escapeHtml(u.full_name)}" data-username="${escapeHtml(u.username)}">Reset Password</button>
+                      <button class="btn btn-danger btn-xs delete-user-btn" data-userid="${escapeHtml(u.user_id)}" data-name="${escapeHtml(u.full_name)}" data-role="${u.role}">Delete</button>
+                    </div>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+
+    // ─── Reset Password handlers ──────────────────────────────────────
+    document.querySelectorAll('.reset-pwd-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const userId = btn.dataset.userid;
+        const userName = btn.dataset.name;
+        const username = btn.dataset.username;
+        Dashboard.showResetPwdModal(userId, userName, username);
+      });
+    });
+
+    // ─── Delete User handlers ─────────────────────────────────────────
+    document.querySelectorAll('.delete-user-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const userId = btn.dataset.userid;
+        const userName = btn.dataset.name;
+        const userRole = btn.dataset.role;
+        Dashboard.showDeleteUserModal(userId, userName, userRole);
+      });
+    });
+  },
+
+  // ─── Reset Password Modal ─────────────────────────────────────────────
+
+  showResetPwdModal(userId, userName, username) {
+    document.getElementById('resetPwdUser').textContent = `${userName} (${username}, ${userId})`;
+    document.getElementById('resetPwdInput').value = '';
+    document.getElementById('resetPwdError').style.display = 'none';
+    document.getElementById('resetPwdModal').classList.add('visible');
+
+    const confirmBtn = document.getElementById('resetPwdConfirmBtn');
+    const cancelBtn = document.getElementById('resetPwdCancelBtn');
+    const closeBtn = document.getElementById('resetPwdModalClose');
+    const input = document.getElementById('resetPwdInput');
+    const errorDiv = document.getElementById('resetPwdError');
+    const errorText = document.getElementById('resetPwdErrorText');
+
+    const cleanup = () => {
+      document.getElementById('resetPwdModal').classList.remove('visible');
+      confirmBtn.onclick = null;
+      cancelBtn.onclick = null;
+      closeBtn.onclick = null;
+    };
+
+    confirmBtn.onclick = async () => {
+      const password = input.value.trim();
+      if (!password || password.length < 4) {
+        errorText.textContent = 'Password must be at least 4 characters';
+        errorDiv.style.display = '';
+        return;
+      }
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = 'Resetting...';
+      try {
+        await API.post(`/api/users/${userId}/reset-password`, { password });
+        showToast(`Password reset for ${userName}`, 'success');
+        cleanup();
+      } catch (err) {
+        errorText.textContent = err.message;
+        errorDiv.style.display = '';
+      } finally {
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = 'Reset Password';
+      }
+    };
+
+    cancelBtn.onclick = cleanup;
+    closeBtn.onclick = cleanup;
+    input.focus();
+  },
+
+  // ─── Delete User Modal ────────────────────────────────────────────────
+
+  showDeleteUserModal(userId, userName, userRole) {
+    document.getElementById('deleteUserInfo').textContent = `${userName} (${userId}) — ${userRole}`;
+    document.getElementById('deleteUserError').style.display = 'none';
+    document.getElementById('deleteUserModal').classList.add('visible');
+
+    const confirmBtn = document.getElementById('deleteUserConfirmBtn');
+    const cancelBtn = document.getElementById('deleteUserCancelBtn');
+    const closeBtn = document.getElementById('deleteUserModalClose');
+    const errorDiv = document.getElementById('deleteUserError');
+    const errorText = document.getElementById('deleteUserErrorText');
+
+    const cleanup = () => {
+      document.getElementById('deleteUserModal').classList.remove('visible');
+      confirmBtn.onclick = null;
+      cancelBtn.onclick = null;
+      closeBtn.onclick = null;
+    };
+
+    confirmBtn.onclick = async () => {
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = 'Deleting...';
+      try {
+        await API.delete(`/api/users/${userId}`);
+        showToast(`Deleted ${userName}`, 'success');
+        // Refresh the users table
+        Dashboard.loadUsersTable();
+        cleanup();
+      } catch (err) {
+        errorText.textContent = err.message;
+        errorDiv.style.display = '';
+      } finally {
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = 'Delete User';
+      }
+    };
+
+    cancelBtn.onclick = cleanup;
+    closeBtn.onclick = cleanup;
   },
 
   // ─── Transactions ────────────────────────────────────────────────────────

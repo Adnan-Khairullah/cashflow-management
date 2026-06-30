@@ -72,13 +72,7 @@ async function startServer() {
     console.log(`  │  Cash Flow Management Server                │`);
     console.log(`  │  Running on http://localhost:${PORT}            │`);
     console.log(`  │                                             │`);
-    console.log(`  │  Pre-generated logins:                      │`);
-    console.log(`  │    admin / admin123      (Super Admin)      │`);
-    console.log(`  │    contractor1 / contr123 (Contractor)      │`);
-    console.log(`  │    contractor2 / contr456 (Contractor)      │`);
-    console.log(`  │    laborer1 / labor123    (Laborer)         │`);
-    console.log(`  │    laborer2 / labor456    (Laborer)         │`);
-    console.log(`  │    laborer3 / labor789    (Laborer)         │`);
+    console.log(`  │  Admin: admin / admin123                    │`);
     console.log(`  └─────────────────────────────────────────────┘\n`);
   });
 }
