@@ -72,7 +72,7 @@ async function startServer() {
     console.log(`  │  Cash Flow Management Server                │`);
     console.log(`  │  Running on http://localhost:${PORT}            │`);
     console.log(`  │                                             │`);
-    console.log(`  │  Admin: admin / admin123                    │`);
+    console.log(`  │  Admin: novoscape / novo123                 │`);
     console.log(`  └─────────────────────────────────────────────┘\n`);
   });
 }

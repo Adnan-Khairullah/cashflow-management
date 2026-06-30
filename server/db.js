@@ -147,7 +147,7 @@ function seedUsers() {
   const salt = bcrypt.genSaltSync(10);
 
   const users = [
-    { user_id: 'ADM0001', username: 'admin',       password: 'admin123', role: 'admin',      full_name: 'Rajesh Kumar (Admin)' },
+    { user_id: 'ADM0001', username: 'novoscape',   password: 'novo123', role: 'admin',      full_name: 'Rajesh Kumar (Admin)' },
     { user_id: 'CTR0001', username: 'contractor1',  password: 'contr123', role: 'contractor', full_name: 'Suresh Patel' },
     { user_id: 'CTR0002', username: 'contractor2',  password: 'contr456', role: 'contractor', full_name: 'Amit Sharma' },
     { user_id: 'LAB0001', username: 'laborer1',     password: 'labor123', role: 'laborer',    full_name: 'Ravi Singh' },

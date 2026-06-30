@@ -379,6 +379,23 @@ h4 { font-size: var(--font-size-lg); }
   min-height: 36px;
 }
 
+.btn-xs {
+  padding: 4px 10px;
+  font-size: var(--font-size-xs);
+  min-height: 28px;
+  border-radius: var(--radius-sm);
+}
+
+.action-btn-group {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: nowrap;
+}
+
+.action-btn-group .btn {
+  white-space: nowrap;
+}
+
 .btn-block {
   width: 100%;
 }
@@ -799,6 +816,14 @@ h4 { font-size: var(--font-size-lg); }
 
 .data-table tr:hover td {
   background: var(--color-gray-50);
+}
+
+.data-table code {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: var(--font-size-xs);
+  background: var(--color-gray-100);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
 }
 
 /* ─── Status Badges ───────────────────────────────────────────────────────── */
